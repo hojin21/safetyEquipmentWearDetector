@@ -36,13 +36,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Trace;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
-
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
@@ -55,13 +48,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.nio.ByteBuffer;
-
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
+
+import java.nio.ByteBuffer;
 
 public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
@@ -144,7 +142,7 @@ public abstract class CameraActivity extends AppCompatActivity
         bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
         btnSwitchCam = findViewById(R.id.fab);
         iv_back = findViewById(R.id.iv_back);
-        captureLayout = findViewById(R.id.container);   
+        captureLayout = findViewById(R.id.container);
         captureCoordinatorLayout = findViewById(R.id.captureCoordinatorLayout);
 
         iv_back.setOnClickListener(view -> finish());
@@ -459,58 +457,6 @@ public abstract class CameraActivity extends AppCompatActivity
         return requiredLevel <= deviceLevel;
     }
 
-    private String chooseCamera() {
-
-        final CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
-        try {
-
-
-            for (final String cameraId : manager.getCameraIdList()) {
-                final CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-
-
-                final StreamConfigurationMap map =
-                        characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
-                if (map == null) {
-                    continue;
-                }
-
-                // Fallback to camera1 API for internal cameras that don't have full support.
-                // This should help with legacy situations where using the camera2 API causes
-                // distorted or otherwise broken previews.
-                //final int facing =
-                //(facing == CameraCharacteristics.LENS_FACING_EXTERNAL)
-//        if (!facing.equals(useFacing)) {
-//          continue;
-//        }
-
-                final Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-
-                if (useFacing != null &&
-                        facing != null &&
-                        !facing.equals(useFacing)
-                ) {
-                    continue;
-                }
-
-
-                useCamera2API = (facing == CameraCharacteristics.LENS_FACING_EXTERNAL)
-                        || isHardwareLevelSupported(
-                        characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL);
-
-
-                LOGGER.i("Camera API lv2?: %s", useCamera2API);
-                return cameraId;
-            }
-        } catch (CameraAccessException e) {
-            LOGGER.e(e, "Not allowed to access camera");
-        }
-        return null;
-    }
-
-
     protected void setFragment() {
         this.cameraId = chooseCamera();
         Fragment fragment;
@@ -536,6 +482,36 @@ public abstract class CameraActivity extends AppCompatActivity
         }
 
         getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+    }
+
+    private String chooseCamera() {
+        final CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        try {
+            for (final String cameraId : manager.getCameraIdList()) {
+                final CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+                final StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                if (map == null) continue;
+                // Fallback to camera1 API for internal cameras that don't have full support.
+                // This should help with legacy situations where using the camera2 API causes
+                // distorted or otherwise broken previews.
+                //final int facing =
+                //(facing == CameraCharacteristics.LENS_FACING_EXTERNAL)
+//        if (!facing.equals(useFacing)) {
+//          continue;
+//        }
+                final Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (useFacing != null && facing != null && !facing.equals(useFacing)) {
+                    continue;
+                }
+                useCamera2API = (facing == CameraCharacteristics.LENS_FACING_EXTERNAL)
+                        || isHardwareLevelSupported(characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL);
+                LOGGER.i("Camera API lv2?: %s", useCamera2API);
+                return cameraId;
+            }
+        } catch (CameraAccessException e) {
+            LOGGER.e(e, "Not allowed to access camera");
+        }
+        return null;
     }
 
     protected void fillBytes(final Plane[] planes, final byte[][] yuvBytes) {

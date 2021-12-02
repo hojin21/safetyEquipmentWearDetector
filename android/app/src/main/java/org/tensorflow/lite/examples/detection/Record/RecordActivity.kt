@@ -91,7 +91,7 @@ class RecordActivity : AppCompatActivity() {
             val endTime = searchSdf.parse(tv_end_date.text.toString())
 
             for (item in totalList) {
-                val (itemYear, itemMonth, itemDay) = item.saveTime.split("/").map { it.toInt() }
+                val (itemYear, itemMonth, itemDay) = item.saveTime.split("_").map { it.toInt() }
                 val searchTime = searchSdf.parse(gerStringTimeFormat(itemYear, itemMonth, itemDay))!!
                 if((searchTime == startTime || searchTime.after(startTime)) && (searchTime == endTime || searchTime.before(endTime))){
                     resultList.add(item)

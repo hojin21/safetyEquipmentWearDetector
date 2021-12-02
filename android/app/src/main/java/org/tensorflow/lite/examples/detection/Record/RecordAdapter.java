@@ -40,7 +40,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
-        String[] timeSplitList = mData.get(position).getSaveTime().split("/");
+        String[] timeSplitList = mData.get(position).getSaveTime().split("_");
         String year = timeSplitList[0];
         String month = timeSplitList[1];
         String day = timeSplitList[2];
